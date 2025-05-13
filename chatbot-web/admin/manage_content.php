@@ -14,25 +14,102 @@ require_once '../includes/functions.php';
 
 $feedback = "";
 
-// Procesamiento de formularios: Agregar nuevo contenido
+// Procesamiento de formularios
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['action']) && $_POST['action'] === 'add') {
-        $trigger  = isset($_POST['trigger']) ? trim($_POST['trigger']) : "";
-        $response = isset($_POST['response']) ? trim($_POST['response']) : "";
+    if (isset($_POST['action'])) {
+        // Inserción manual
+        if ($_POST['action'] === 'add') {
+            $trigger  = isset($_POST['trigger']) ? trim($_POST['trigger']) : "";
+            $response = isset($_POST['response']) ? trim($_POST['response']) : "";
   
-        if (!empty($trigger) && !empty($response)) {
-            try {
-                $stmt = $db->prepare("INSERT INTO content (trigger_word, response_text) VALUES (:trigger, :response)");
-                $stmt->execute([
-                    ':trigger'  => $trigger,
-                    ':response' => $response
-                ]);
-                $feedback = "Contenido agregado con éxito.";
-            } catch (Exception $e) {
-                $feedback = "Error al agregar contenido: " . $e->getMessage();
+            if (!empty($trigger) && !empty($response)) {
+                try {
+                    $stmt = $db->prepare("INSERT INTO content (trigger_word, response_text) VALUES (:trigger, :response)");
+                    $stmt->execute([
+                        ':trigger'  => $trigger,
+                        ':response' => $response
+                    ]);
+                    $feedback = "Contenido agregado con éxito (manual).";
+                } catch (Exception $e) {
+                    $feedback = "Error al agregar contenido: " . $e->getMessage();
+                }
+            } else {
+                $feedback = "Por favor, rellena todos los campos para el contenido manual.";
             }
-        } else {
-            $feedback = "Por favor, rellena todos los campos.";
+        }
+        // Importación desde archivo
+        elseif ($_POST['action'] === 'import') {
+            if (isset($_FILES['import_file']) && $_FILES['import_file']['error'] === UPLOAD_ERR_OK) {
+                $fileTmpPath = $_FILES['import_file']['tmp_name'];
+                $fileName = $_FILES['import_file']['name'];
+                $fileNameCmps = explode(".", $fileName);
+                $fileExtension = strtolower(end($fileNameCmps));
+
+                // Variable para contar los inserts
+                $insertCount = 0;
+
+                // Procesar archivo JSON
+                if ($fileExtension === 'json') {
+                    $jsonContent = file_get_contents($fileTmpPath);
+                    $data = json_decode($jsonContent, true);
+                    if (is_array($data)) {
+                        foreach ($data as $item) {
+                            // Se espera que cada item tenga 'trigger_word' y 'response_text'
+                            if (isset($item['trigger_word'], $item['response_text'])) {
+                                try {
+                                    $stmt = $db->prepare("INSERT INTO content (trigger_word, response_text) VALUES (:trigger, :response)");
+                                    $stmt->execute([
+                                        ':trigger'  => trim($item['trigger_word']),
+                                        ':response' => trim($item['response_text'])
+                                    ]);
+                                    $insertCount++;
+                                } catch (Exception $e) {
+                                    // Puedes registrar el error y continuar con el siguiente item
+                                    continue;
+                                }
+                            }
+                        }
+                        $feedback = "Archivo JSON importado. Registros insertados: $insertCount.";
+                    } else {
+                        $feedback = "Error al parsear el archivo JSON.";
+                    }
+                }
+                // Procesar archivo CSV
+                elseif ($fileExtension === 'csv') {
+                    if (($handle = fopen($fileTmpPath, "r")) !== false) {
+                        // Opcional: Si el CSV tiene encabezado, descomentar la siguiente línea para descartarlo:
+                        // fgetcsv($handle, 1000, ",");
+                        while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+                            // Se espera que el CSV tenga al menos dos columnas: disparador y respuesta
+                            if (count($row) >= 2) {
+                                $trigger_val = trim($row[0]);
+                                $response_val = trim($row[1]);
+                                if (!empty($trigger_val) && !empty($response_val)) {
+                                    try {
+                                        $stmt = $db->prepare("INSERT INTO content (trigger_word, response_text) VALUES (:trigger, :response)");
+                                        $stmt->execute([
+                                            ':trigger'  => $trigger_val,
+                                            ':response' => $response_val
+                                        ]);
+                                        $insertCount++;
+                                    } catch (Exception $e) {
+                                        // Registrar el error y continuar con el siguiente registro
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                        fclose($handle);
+                        $feedback = "Archivo CSV importado. Registros insertados: $insertCount.";
+                    } else {
+                        $feedback = "Error al abrir el archivo CSV.";
+                    }
+                } else {
+                    $feedback = "Solo se permiten archivos de tipo JSON y CSV.";
+                }
+            } else {
+                $feedback = "Error en la subida del archivo o archivo no recibido.";
+            }
         }
     }
 }
@@ -117,18 +194,20 @@ try {
             border: 1px solid #ccc;
             text-align: left;
         }
-        form.add-content {
+        form.add-content, form.import-content {
             margin-bottom: 30px;
         }
         form.add-content input[type="text"],
-        form.add-content textarea {
+        form.add-content textarea,
+        form.import-content input[type="file"] {
             width: 100%;
             padding: 8px;
             margin: 5px 0 15px;
             border: 1px solid #ccc;
             border-radius: 3px;
         }
-        form.add-content button {
+        form.add-content button,
+        form.import-content button {
             padding: 10px 20px;
             background: #333;
             color: #fff;
@@ -136,7 +215,8 @@ try {
             border-radius: 3px;
             cursor: pointer;
         }
-        form.add-content button:hover {
+        form.add-content button:hover,
+        form.import-content button:hover {
             opacity: 0.9;
         }
     </style>
@@ -160,7 +240,7 @@ try {
         <?php endif; ?>
 
         <section>
-            <h2>Agregar Nuevo Contenido</h2>
+            <h2>Agregar Nuevo Contenido (Manual)</h2>
             <form class="add-content" method="post" action="manage_content.php">
                 <input type="hidden" name="action" value="add">
                 <label for="trigger">Disparador:</label>
@@ -170,6 +250,16 @@ try {
                 <textarea name="response" id="response" rows="3" placeholder="Ej. ¡Hola! ¿En qué puedo ayudarte?" required></textarea>
 
                 <button type="submit">Agregar Contenido</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Importar Contenido desde Archivo (JSON o CSV)</h2>
+            <form class="import-content" method="post" action="manage_content.php" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="import">
+                <label for="import_file">Selecciona un archivo (.json o .csv):</label>
+                <input type="file" name="import_file" id="import_file" accept=".json,.csv" required>
+                <button type="submit">Importar Archivo</button>
             </form>
         </section>
 
@@ -192,7 +282,6 @@ try {
                                 <td><?php echo htmlspecialchars($row['trigger_word']); ?></td>
                                 <td><?php echo htmlspecialchars($row['response_text']); ?></td>
                                 <td>
-                                    <!-- Podrías agregar un enlace para editar en el futuro -->
                                     <a href="manage_content.php?delete=<?php echo htmlspecialchars($row['id']); ?>" onclick="return confirm('¿Estás seguro de eliminar este contenido?');">Eliminar</a>
                                 </td>
                             </tr>
