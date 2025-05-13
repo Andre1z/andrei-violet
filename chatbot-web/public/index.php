@@ -21,12 +21,14 @@ try {
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Sidebar: panel lateral izquierdo -->
+    <!-- Botón para mostrar el sidebar cuando esté oculto (inicialmente oculto) -->
+    <button id="btn-show" title="Mostrar panel" style="display: none; position: fixed; top: 10px; left: 10px; z-index: 200; background: #333; color: #fff; border: none; padding: 10px; border-radius: 3px; cursor: pointer;">&#x2192;</button>
+
+    <!-- Sidebar (panel lateral izquierdo) -->
     <div id="sidebar">
         <header>
-            <!-- Botón para ocultar/mostrar el sidebar -->
+            <!-- Botones ubicados dentro del header en la esquina superior derecha del sidebar -->
             <button id="btn-hide" title="Ocultar panel">&#x2190;</button>
-            <!-- Botón para crear un nuevo chat -->
             <button id="btn-new-chat" title="Nuevo chat">&#x2795;</button>
         </header>
         <div id="chat-session-list">

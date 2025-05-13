@@ -1,15 +1,26 @@
 document.addEventListener("DOMContentLoaded", function() {
     const btnHide = document.getElementById("btn-hide");
+    const btnShow = document.getElementById("btn-show");  // Nuevo botón para mostrar el sidebar
     const sidebar = document.getElementById("sidebar");
     const chatArea = document.getElementById("chat-area");
     const btnNewChat = document.getElementById("btn-new-chat");
     const sessionList = document.getElementById("chat-session-list");
-    let currentChatId = null; // Identificador de la sesión actual
+    let currentChatId = null; // Identificador de la sesión en curso
 
-    // Función para ocultar/mostrar el sidebar
+    // Función para ocultar el sidebar y mostrar btnShow
     btnHide.addEventListener("click", function() {
-        sidebar.classList.toggle("hidden");
-        chatArea.classList.toggle("full");
+        sidebar.classList.add("hidden");
+        chatArea.classList.add("full");
+        // Mostrar el botón "Mostrar panel"
+        btnShow.style.display = "block";
+    });
+
+    // Evento para volver a mostrar el sidebar
+    btnShow.addEventListener("click", function() {
+        sidebar.classList.remove("hidden");
+        chatArea.classList.remove("full");
+        // Ocultar el botón "Mostrar panel"
+        btnShow.style.display = "none";
     });
 
     // Crear una nueva sesión de chat
@@ -19,7 +30,6 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(data => {
             if (data.chat_id) {
                 currentChatId = data.chat_id;
-                // Reinicia el área de mensajes para el nuevo chat
                 document.getElementById("chat-messages").innerHTML = "";
                 // Insertar la nueva sesión en la lista (al principio)
                 let newSessionDiv = document.createElement("div");
@@ -35,10 +45,9 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 
-    // Cargar la conversación de una sesión al hacer clic en ella
+    // Cargar la conversación al hacer clic en una sesión del sidebar
     sessionList.addEventListener("click", function(e) {
         let target = e.target;
-        // Asegurarse de obtener el elemento con la clase "chat-session"
         while (target && !target.classList.contains("chat-session")) {
             target = target.parentElement;
         }
@@ -52,11 +61,11 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             target.classList.add("active");
 
-            // Solicitar la conversación mediante AJAX a load_chat.php
+            // Llamada AJAX para cargar la conversación (desde load_chat.php)
             fetch("load_chat.php?chat_id=" + chatId)
             .then(response => response.json())
             .then(data => {
-                const chatMessages = document.getElementById("chat-messages");
+                let chatMessages = document.getElementById("chat-messages");
                 chatMessages.innerHTML = "";
                 if (Array.isArray(data.messages)) {
                     data.messages.forEach(function(message) {
@@ -72,13 +81,14 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Envío del formulario para enviar mensajes (incluyendo chat_id)
+    // Envío del formulario para enviar mensajes (incluye chat_id)
     document.getElementById("chat-form").addEventListener("submit", function(e) {
         e.preventDefault();
         const messageInput = document.getElementById("message");
         const message = messageInput.value.trim();
         if (message === "") return;
         
+        // Agrega el mensaje del usuario en la interfaz
         appendMessage("user", message);
 
         let formData = new FormData();
@@ -91,19 +101,19 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.reply) {
-                appendMessage("bot", data.reply);
-            }
+           if (data.reply) {
+               appendMessage("bot", data.reply);
+           }
         })
         .catch(error => console.error("Error procesando el mensaje:", error));
 
         messageInput.value = "";
     });
 
-    // Función para agregar mensajes en la interfaz y desplazar el scroll hacia abajo
+    // Función para agregar mensajes en la interfaz y ajustar el scroll
     function appendMessage(sender, text) {
         const chatMessages = document.getElementById("chat-messages");
-        let messageDiv = document.createElement("div");
+        const messageDiv = document.createElement("div");
         messageDiv.classList.add("message", sender);
         messageDiv.textContent = text;
         chatMessages.appendChild(messageDiv);

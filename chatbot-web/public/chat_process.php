@@ -2,38 +2,59 @@
 session_start();
 header('Content-Type: application/json');
 
-// Incluir configuración, conexión y funciones comunes
 require_once '../includes/config.php';
 require_once '../includes/db.php';
 require_once '../includes/functions.php';
 
-// Si se recibe un mensaje vía POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
-    // Se sanitiza la entrada para evitar inyección de código
-    $userMessage = sanitizeInput($_POST['message']);
-    
-    try {
-        // Se busca una respuesta que coincida exacta con el disparador ingresado
-        $stmt = $db->prepare("SELECT response_text FROM content WHERE trigger_word = :trigger LIMIT 1");
-        $stmt->execute([':trigger' => $userMessage]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($result) {
-            $reply = $result['response_text'];
-        } else {
-            // Respuesta por defecto si no se encuentra coincidencia
-            $reply = "Lo siento, no tengo una respuesta para esa pregunta.";
-        }
-    } catch (Exception $e) {
-        // En caso de error, se retorna el mensaje del error (útil para depuración)
-        $reply = "Error: " . $e->getMessage();
-    }
-    
-    // Se envía la respuesta en formato JSON al frontend
-    echo json_encode(['reply' => $reply]);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['message'])) {
+    echo json_encode(['reply' => 'No se recibió mensaje.']);
     exit();
 }
 
-// Si no se recibe un mensaje correctamente, se retorna un mensaje genérico
-echo json_encode(['reply' => 'No se recibió mensaje.']);
+$chat_id = isset($_POST['chat_id']) ? intval($_POST['chat_id']) : null;
+$message = sanitizeInput($_POST['message']);
+
+// Inserta el mensaje del usuario en la tabla messages
+try {
+    $stmt = $db->prepare("INSERT INTO messages (chat_id, sender, message, sent_at) VALUES (:chat_id, 'user', :message, datetime('now'))");
+    $stmt->execute([':chat_id' => $chat_id, ':message' => $message]);
+    
+    // Actualiza la última actualización del chat
+    $stmt = $db->prepare("UPDATE chats SET last_updated = datetime('now') WHERE id = :chat_id");
+    $stmt->execute([':chat_id' => $chat_id]);
+} catch (Exception $e) {
+    echo json_encode(['reply' => 'Error almacenando el mensaje del usuario: ' . $e->getMessage()]);
+    exit();
+}
+
+// Busca una respuesta predefinida (por ejemplo, búsqueda exacta)
+try {
+    $stmt = $db->prepare("SELECT response_text FROM content WHERE trigger_word = :trigger LIMIT 1");
+    $stmt->execute([':trigger' => $message]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($result) {
+        $reply = $result['response_text'];
+    } else {
+        $reply = "Lo siento, no tengo una respuesta para esa pregunta.";
+    }
+} catch (Exception $e) {
+    echo json_encode(['reply' => 'Error consultando la respuesta: ' . $e->getMessage()]);
+    exit();
+}
+
+// Inserta la respuesta del bot
+try {
+    $stmt = $db->prepare("INSERT INTO messages (chat_id, sender, message, sent_at) VALUES (:chat_id, 'bot', :reply, datetime('now'))");
+    $stmt->execute([':chat_id' => $chat_id, ':reply' => $reply]);
+    
+    // Actualiza last_updated nuevamente
+    $stmt = $db->prepare("UPDATE chats SET last_updated = datetime('now') WHERE id = :chat_id");
+    $stmt->execute([':chat_id' => $chat_id]);
+} catch (Exception $e) {
+    echo json_encode(['reply' => 'Error almacenando el mensaje del bot: ' . $e->getMessage()]);
+    exit();
+}
+
+echo json_encode(['reply' => $reply]);
 exit();
