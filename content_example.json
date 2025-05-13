@@ -1,0 +1,54 @@
+[
+  {
+    "trigger_word": "¿Qué es una variable?",
+    "response_text": "Una variable es un espacio en memoria que se utiliza para almacenar datos y que puede modificar su valor a lo largo del tiempo."
+  },
+  {
+    "trigger_word": "¿Qué es un bucle?",
+    "response_text": "Un bucle es una estructura de control que repite un conjunto de instrucciones mientras se cumpla una condición determinada."
+  },
+  {
+    "trigger_word": "¿Qué es un algoritmo?",
+    "response_text": "Un algoritmo es una secuencia finita y ordenada de instrucciones que permite resolver un problema específico."
+  },
+  {
+    "trigger_word": "¿Qué es una función?",
+    "response_text": "Una función es un bloque de código reutilizable que realiza una tarea específica y puede recibir parámetros de entrada."
+  },
+  {
+    "trigger_word": "¿Qué es un array?",
+    "response_text": "Un array es una estructura de datos que almacena una colección de elementos del mismo tipo, accesibles mediante un índice."
+  },
+  {
+    "trigger_word": "¿Qué es un objeto?",
+    "response_text": "Un objeto es una instancia de una clase que agrupa datos y funciones relacionadas, permitiendo la programación orientada a objetos."
+  },
+  {
+    "trigger_word": "¿Qué es un condicional?",
+    "response_text": "Un condicional es una estructura de control que permite ejecutar diferentes bloques de código según si se cumple o no una condición."
+  },
+  {
+    "trigger_word": "¿Qué es un error de sintaxis?",
+    "response_text": "Un error de sintaxis es un fallo en la escritura del código que impide su correcta interpretación por parte del compilador o intérprete."
+  },
+  {
+    "trigger_word": "¿Qué es un compilador?",
+    "response_text": "Un compilador es un programa que traduce el código fuente escrito en un lenguaje de programación a un lenguaje de máquina ejecutable."
+  },
+  {
+    "trigger_word": "¿Qué es un intérprete?",
+    "response_text": "Un intérprete es un programa que ejecuta el código fuente línea por línea, sin necesidad de compilarlo previamente."
+  },
+  {
+    "trigger_word": "¿Qué es un IDE?",
+    "response_text": "Un IDE (Entorno de Desarrollo Integrado) es una aplicación que proporciona herramientas para facilitar la programación, como editores de código, depuradores y compiladores."
+  },
+  {
+    "trigger_word": "¿Qué es un framework?",
+    "response_text": "Un framework es un conjunto de herramientas y bibliotecas que facilitan el desarrollo de aplicaciones al proporcionar una estructura predefinida."
+  },
+  {
+    "trigger_word": "¿Qué es una API?",
+    "response_text": "Una API (Interfaz de Programación de Aplicaciones) es un conjunto de reglas y protocolos que permite la comunicación entre diferentes aplicaciones o servicios."
+  }
+]
