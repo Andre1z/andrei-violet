@@ -1,25 +1,29 @@
 document.addEventListener("DOMContentLoaded", function() {
+    // Variables ya definidas previamente...
     const btnHide = document.getElementById("btn-hide");
-    const btnShow = document.getElementById("btn-show");  // Nuevo botón para mostrar el sidebar
+    const btnShow = document.getElementById("btn-show");
     const sidebar = document.getElementById("sidebar");
     const chatArea = document.getElementById("chat-area");
     const btnNewChat = document.getElementById("btn-new-chat");
     const sessionList = document.getElementById("chat-session-list");
+    const btnOptions = document.getElementById("btn-options");
+    const popupOptions = document.getElementById("popup-options");
+    const btnDeleteChat = document.getElementById("btn-delete-chat");
+    const btnShareChat = document.getElementById("btn-share-chat");
+    const btnClosePopup = document.getElementById("btn-close-popup");
     let currentChatId = null; // Identificador de la sesión en curso
 
-    // Función para ocultar el sidebar y mostrar btnShow
+    // Ocultar el sidebar y mostrar el botón "btn-show"
     btnHide.addEventListener("click", function() {
         sidebar.classList.add("hidden");
         chatArea.classList.add("full");
-        // Mostrar el botón "Mostrar panel"
         btnShow.style.display = "block";
     });
 
-    // Evento para volver a mostrar el sidebar
+    // Mostrar el sidebar cuando se pulsa el botón "btn-show"
     btnShow.addEventListener("click", function() {
         sidebar.classList.remove("hidden");
         chatArea.classList.remove("full");
-        // Ocultar el botón "Mostrar panel"
         btnShow.style.display = "none";
     });
 
@@ -31,7 +35,6 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.chat_id) {
                 currentChatId = data.chat_id;
                 document.getElementById("chat-messages").innerHTML = "";
-                // Insertar la nueva sesión en la lista (al principio)
                 let newSessionDiv = document.createElement("div");
                 newSessionDiv.classList.add("chat-session");
                 newSessionDiv.dataset.chatId = data.chat_id;
@@ -40,12 +43,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 sessionList.prepend(newSessionDiv);
             }
         })
-        .catch(error => {
-            console.error("Error al crear nuevo chat:", error);
-        });
+        .catch(error => console.error("Error al crear nuevo chat:", error));
     });
 
-    // Cargar la conversación al hacer clic en una sesión del sidebar
+    // Cargar la conversación al pulsar una sesión en el sidebar
     sessionList.addEventListener("click", function(e) {
         let target = e.target;
         while (target && !target.classList.contains("chat-session")) {
@@ -54,14 +55,10 @@ document.addEventListener("DOMContentLoaded", function() {
         if (target) {
             let chatId = target.dataset.chatId;
             currentChatId = chatId;
-
-            // Resaltar la sesión seleccionada
             document.querySelectorAll(".chat-session").forEach(function(el) {
                 el.classList.remove("active");
             });
             target.classList.add("active");
-
-            // Llamada AJAX para cargar la conversación (desde load_chat.php)
             fetch("load_chat.php?chat_id=" + chatId)
             .then(response => response.json())
             .then(data => {
@@ -80,37 +77,32 @@ document.addEventListener("DOMContentLoaded", function() {
             .catch(error => console.error("Error al cargar chat:", error));
         }
     });
-
-    // Envío del formulario para enviar mensajes (incluye chat_id)
+    
+    // Envío del formulario para enviar mensajes
     document.getElementById("chat-form").addEventListener("submit", function(e) {
         e.preventDefault();
         const messageInput = document.getElementById("message");
         const message = messageInput.value.trim();
         if (message === "") return;
-        
-        // Agrega el mensaje del usuario en la interfaz
         appendMessage("user", message);
-
         let formData = new FormData();
         formData.append("message", message);
         formData.append("chat_id", currentChatId);
-
         fetch("chat_process.php", {
             method: "POST",
             body: formData
         })
         .then(response => response.json())
         .then(data => {
-           if (data.reply) {
-               appendMessage("bot", data.reply);
-           }
+            if (data.reply) {
+                appendMessage("bot", data.reply);
+            }
         })
         .catch(error => console.error("Error procesando el mensaje:", error));
-
         messageInput.value = "";
     });
 
-    // Función para agregar mensajes en la interfaz y ajustar el scroll
+    // Función para agregar mensajes y ajustar el scroll
     function appendMessage(sender, text) {
         const chatMessages = document.getElementById("chat-messages");
         const messageDiv = document.createElement("div");
@@ -119,4 +111,62 @@ document.addEventListener("DOMContentLoaded", function() {
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
+
+    // Mostrar el modal de opciones al pulsar el botón de opciones (···)
+    btnOptions.addEventListener("click", function() {
+        popupOptions.style.display = "block";
+    });
+
+    // Cerrar el modal
+    btnClosePopup.addEventListener("click", function() {
+        popupOptions.style.display = "none";
+    });
+    
+    // Acción para eliminar el chat
+    btnDeleteChat.addEventListener("click", function() {
+        if (currentChatId) {
+            // Aquí puedes realizar una petición AJAX a un endpoint delete_chat.php
+            // Por ejemplo:
+            fetch("delete_chat.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chat_id: currentChatId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Si se eliminó correctamente, limpiar mensajes y quitar de la lista
+                    document.getElementById("chat-messages").innerHTML = "";
+                    const el = document.querySelector(`.chat-session[data-chat-id="${currentChatId}"]`);
+                    if (el) el.remove();
+                    currentChatId = null;
+                    alert("Chat eliminado.");
+                } else {
+                    alert("Error al eliminar el chat: " + data.error);
+                }
+                popupOptions.style.display = "none";
+            })
+            .catch(error => {
+                console.error("Error eliminando el chat:", error);
+                popupOptions.style.display = "none";
+            });
+        }
+    });
+    
+    // Acción para compartir el chat
+    btnShareChat.addEventListener("click", function() {
+        if (currentChatId) {
+            // Por ejemplo, copiar la URL actual con el chat_id (puedes ajustar la lógica)
+            const shareText = "Chat ID: " + currentChatId;
+            // Usamos la API del portapapeles si está disponible
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText)
+                .then(() => alert("Chat compartido (texto copiado al portapapeles)."))
+                .catch(err => alert("Error al copiar: " + err));
+            } else {
+                alert("Chat: " + shareText);
+            }
+        }
+        popupOptions.style.display = "none";
+    });
 });
