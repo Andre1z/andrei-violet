@@ -1,0 +1,192 @@
+/* =========================================
+   Reset y estilos generales
+   ========================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* =========================================
+   Estilos para la interfaz del Chatbot
+   ========================================= */
+.chat-container {
+  max-width: 700px;
+  margin: 30px auto;
+  background: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.chat-header {
+  background: #333;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+.chat-messages {
+  height: 400px;
+  overflow-y: auto;
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.chat-messages .message {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 5px;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.chat-messages .message.user {
+  background: #d1e7dd;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.chat-messages .message.bot {
+  background: #f8d7da;
+  align-self: flex-start;
+  margin-right: auto;
+}
+
+.chat-input {
+  padding: 15px;
+}
+
+.chat-input form {
+  display: flex;
+}
+
+.chat-input input[type="text"] {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 16px;
+}
+
+.chat-input button {
+  padding: 10px 20px;
+  border: none;
+  background: #333;
+  color: #fff;
+  margin-left: 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.chat-input button:hover {
+  opacity: 0.9;
+}
+
+/* =========================================
+   Estilos para el Panel de Administración
+   ========================================= */
+.admin-container {
+  max-width: 900px;
+  margin: 30px auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.admin-container header {
+  background: #333;
+  color: #fff;
+  padding: 15px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 0;
+}
+
+nav ul li {
+  margin: 0 15px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Tablas en el panel */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+table th,
+table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+/* Formularios en el panel */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+form button {
+  padding: 10px 20px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+form button:hover {
+  opacity: 0.9;
+}
+
+/* =========================================
+   Alertas y mensajes
+   ========================================= */
+.alert {
+  padding: 10px;
+  margin: 15px 0;
+  border-radius: 3px;
+  text-align: center;
+}
+
+.alert.info {
+  background: #e7e7e7;
+  color: #333;
+}
+
+.alert.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.alert.error {
+  background: #f8d7da;
+  color: #721c24;
+}
