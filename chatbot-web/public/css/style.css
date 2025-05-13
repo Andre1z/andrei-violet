@@ -1,5 +1,5 @@
 /* =========================================
-   Reset y estilos generales
+   Reset y Estilos Generales
    ========================================= */
 * {
   margin: 0;
@@ -15,7 +15,7 @@ body {
 }
 
 /* =========================================
-   Estilos para la interfaz del Chatbot
+   Estilos para la Interfaz del Chatbot
    ========================================= */
 .chat-container {
   max-width: 700px;
@@ -167,7 +167,7 @@ form button:hover {
 }
 
 /* =========================================
-   Alertas y mensajes
+   Alertas y Mensajes
    ========================================= */
 .alert {
   padding: 10px;
@@ -189,4 +189,80 @@ form button:hover {
 .alert.error {
   background: #f8d7da;
   color: #721c24;
+}
+
+/* =========================================
+   Estilos adicionales para el Sidebar y Chat Area
+   ========================================= */
+/* Sidebar (Panel Lateral Izquierdo) */
+#sidebar {
+  width: 250px;
+  background: #fff;
+  border-right: 1px solid #ccc;
+  height: 100vh;
+  overflow-y: auto;
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: transform 0.3s ease;
+}
+
+/* Clase para esconder el sidebar */
+#sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+/* Encabezado del Sidebar (contenido dentro del panel) */
+#sidebar header {
+  /* Posicionado de forma relativa para quedar dentro del contenedor */
+  position: relative;
+  height: 60px;
+  background: #333;
+  color: #fff;
+  display: flex;
+  justify-content: flex-end; /* Ubica los botones en la esquina superior derecha */
+  align-items: center;
+  padding: 0 10px;
+}
+
+/* Estilos para los botones en el header del sidebar */
+#sidebar header button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+/* Lista de sesiones de chat */
+#chat-session-list {
+  padding: 10px;
+  margin-top: 10px; /* Separa la lista del header */
+}
+
+.chat-session {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.chat-session:hover {
+  background: #f4f4f4;
+}
+
+.chat-session.active {
+  background: #e7e7e7;
+}
+
+/* Área principal del chat */
+#chat-area {
+  margin-left: 250px;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Cuando el sidebar se oculta, el área principal ocupa el 100% */
+#chat-area.full {
+  margin-left: 0;
 }
